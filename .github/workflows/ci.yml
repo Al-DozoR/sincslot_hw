@@ -1,0 +1,165 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm install
+
+      - name: Run ESLint
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Run Prettier
+        working-directory: frontend
+        run: npm exec prettier --check "src/**/*.{js,jsx,css}"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install pre-commit
+        run: |
+          python -m pip install --upgrade pip
+          pip install pre-commit
+
+      - name: Run pre-commit
+        run: pre-commit run --all-files
+
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: sincslot_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d sincslot_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      PYTHONPATH: ${{ github.workspace }}
+      SYNC_SLOT__DB__URL: postgresql+asyncpg://postgres:postgres@127.0.0.1:5432/sincslot_ci
+      SYNC_SLOT__DB_TEST__URL: postgresql+asyncpg://postgres:postgres@127.0.0.1:5432/sincslot_ci
+      SYNC_SLOT__DB__ECHO: 0
+      SYNC_SLOT__DB__ECHO_POOL: 0
+      SYNC_SLOT__PASSWORD__SALT: "Tom&Jerry"
+      SYNC_SLOT__JWT__SECRET_KEY: secret_key
+      SYNC_SLOT__JWT__ALGORITHM: HS256
+      SYNC_SLOT__JWT__ACCESS_TOKEN_EXPIRE_MINUTES: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run pytest
+        run: >
+          pytest -q
+          backend/tests/test_service/test_service.py
+          backend/tests/test_company/test_settings_company/test_settings_company.py
+          backend/tests/test_company/test_work_schedule/test_work_schedule.py
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install security tools
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Run Bandit
+        run: >
+          bandit -q -r
+          backend/api
+          backend/core
+          backend/entity
+          backend/repository
+          backend/use_case
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  notify:
+    runs-on: ubuntu-latest
+    needs:
+      - lint
+      - test
+      - security
+    if: always()
+    steps:
+      - name: Send Telegram notification
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          LINT_RESULT: ${{ needs.lint.result }}
+          TEST_RESULT: ${{ needs.test.result }}
+          SECURITY_RESULT: ${{ needs.security.result }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+        shell: bash
+        run: |
+          if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
+            echo "Telegram secrets are not configured. Skipping notification."
+            exit 0
+          fi
+
+          STATUS="FAILED"
+          if [ "$LINT_RESULT" = "success" ] && [ "$TEST_RESULT" = "success" ] && [ "$SECURITY_RESULT" = "success" ]; then
+            STATUS="SUCCESS"
+          fi
+
+          MESSAGE="SincSlot CI: ${STATUS}%0APR: ${PR_TITLE}%0AAuthor: ${PR_AUTHOR}%0ALint: ${LINT_RESULT}%0ATest: ${TEST_RESULT}%0ASecurity: ${SECURITY_RESULT}%0A${PR_URL}"
+
+          curl -s --fail -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -d "chat_id=${TELEGRAM_CHAT_ID}" \
+            -d "text=${MESSAGE}"
