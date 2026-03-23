@@ -1,7 +1,7 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import styles from './Header.module.css';
-import {authService} from "../../services/authService.js";
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import styles from "./Header.module.css";
+import { authService } from "../../services/authService.js";
 
 const Header = ({ title, showLogout = true }) => {
   const navigate = useNavigate();
@@ -16,15 +16,15 @@ const Header = ({ title, showLogout = true }) => {
   };
 
   const handleGoToSchedule = () => {
-    navigate('/schedule');
+    navigate("/schedule");
   };
 
   const handleGoToServices = () => {
-    navigate('/services');
+    navigate("/services");
   };
 
   const handleGoToSettings = () => {
-    navigate('/settings');
+    navigate("/settings");
   };
 
   return (
@@ -33,33 +33,21 @@ const Header = ({ title, showLogout = true }) => {
         <div className={styles.leftSection}>
           <h1 className={styles.title}>{title}</h1>
           <nav className={styles.nav}>
-            <button 
-              className={styles.navButton}
-              onClick={handleGoToSchedule}
-            >
+            <button className={styles.navButton} onClick={handleGoToSchedule}>
               Расписание
             </button>
-            <button 
-              className={styles.navButton}
-              onClick={handleGoToServices}
-            >
+            <button className={styles.navButton} onClick={handleGoToServices}>
               Услуги
             </button>
-            <button 
-              className={styles.navButton}
-              onClick={handleGoToSettings}
-            >
+            <button className={styles.navButton} onClick={handleGoToSettings}>
               Настройки
             </button>
           </nav>
         </div>
-        
+
         {showLogout && (
           <div className={styles.rightSection}>
-            <button 
-              className={styles.logoutButton}
-              onClick={handleLogout}
-            >
+            <button className={styles.logoutButton} onClick={handleLogout}>
               Выйти из учетной записи
             </button>
           </div>

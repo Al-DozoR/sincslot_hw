@@ -18,7 +18,7 @@ let isRefreshing = false;
 let failedQueue = [];
 
 const processQueue = (error, token = null) => {
-  failedQueue.forEach(prom => {
+  failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
     } else {
@@ -30,7 +30,7 @@ const processQueue = (error, token = null) => {
 };
 
 api.interceptors.response.use(
-  response => response,
+  (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
@@ -43,7 +43,11 @@ api.interceptors.response.use(
       if (!isRefreshing) {
         isRefreshing = true;
         try {
-          const { data } = await axios.post(`${API_URL}/api/v1/company/auth/refresh-token`, {}, { withCredentials: true });
+          const { data } = await axios.post(
+            `${API_URL}/api/v1/company/auth/refresh-token`,
+            {},
+            { withCredentials: true },
+          );
           localStorage.setItem("accessToken", data.accessToken);
           isRefreshing = false;
           processQueue(null, data.accessToken);
@@ -60,13 +64,13 @@ api.interceptors.response.use(
             originalRequest.headers["Authorization"] = "Bearer " + token;
             resolve(api(originalRequest));
           },
-          reject: (err) => reject(err)
+          reject: (err) => reject(err),
         });
       });
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

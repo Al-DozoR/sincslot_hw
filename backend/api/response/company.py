@@ -146,5 +146,3 @@ class CompanyBookingResponse(BaseModel):
 
 class CompanyBookingScheduleResponse(BaseModel):
     bookings: list[CompanyBookingResponse]
-
-

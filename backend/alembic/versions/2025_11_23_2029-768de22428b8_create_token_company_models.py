@@ -1,7 +1,7 @@
 """create token company models
 
 Revision ID: 768de22428b8
-Revises: 
+Revises:
 Create Date: 2025-11-23 20:29:43.907452
 
 """

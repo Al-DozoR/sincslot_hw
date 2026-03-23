@@ -1,14 +1,14 @@
-import React, {useEffect, useRef, useState} from 'react';
-import { Link } from 'react-router-dom';
-import styles from '../Auth.module.css';
-import {authService} from "../../../services/authService.js";
-import {toast} from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import React, { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import styles from "../Auth.module.css";
+import { authService } from "../../../services/authService.js";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function ForgotPasswordPage() {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const emailInputRef = useRef(null);
 
@@ -21,9 +21,9 @@ function ForgotPasswordPage() {
     setEmail(value);
 
     if (!validateEmail(value)) {
-      setError('Введите корректный email');
+      setError("Введите корректный email");
     } else {
-      setError('');
+      setError("");
     }
   };
 
@@ -36,16 +36,16 @@ function ForgotPasswordPage() {
     e.preventDefault();
 
     if (!validateEmail(email)) {
-      setError('Введите корректный email');
+      setError("Введите корректный email");
       return;
     }
 
     try {
       const result = await authService.forgotPassword(email);
-      console.log('Ответ сервера:', result);
+      console.log("Ответ сервера:", result);
       setIsSubmitted(true);
     } catch (err) {
-      console.error('Ошибка восстановления пароля:', err);
+      console.error("Ошибка восстановления пароля:", err);
       toast.error("Ошибка сервера, попробуйте позже");
     }
   };
@@ -57,10 +57,16 @@ function ForgotPasswordPage() {
           <div className={styles.authHeader}>
             <div className={styles.successIcon}>✅</div>
             <h2>Письмо отправлено!</h2>
-            <p>Мы отправили инструкции по восстановлению пароля на email: <strong>{email}</strong></p>
+            <p>
+              Мы отправили инструкции по восстановлению пароля на email:{" "}
+              <strong>{email}</strong>
+            </p>
           </div>
 
-          <div className={styles.authLinks} style={{ justifyContent: 'center', marginTop: '2rem' }}>
+          <div
+            className={styles.authLinks}
+            style={{ justifyContent: "center", marginTop: "2rem" }}
+          >
             <Link to="/login" className={`${styles.btn} ${styles.btnPrimary}`}>
               Вернуться к входу
             </Link>

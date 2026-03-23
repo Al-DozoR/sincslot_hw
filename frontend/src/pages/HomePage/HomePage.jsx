@@ -1,6 +1,6 @@
-import React from 'react';
-import styles from './HomePage.module.css';
-import {Link} from 'react-router-dom';
+import React from "react";
+import styles from "./HomePage.module.css";
+import { Link } from "react-router-dom";
 
 function HomePage() {
   return (
@@ -13,10 +13,14 @@ function HomePage() {
             </div>
             <nav className={styles.authButtons}>
               <Link to="/login">
-                <button className={`${styles.btn} ${styles.btnOutline}`}>Войти</button>
+                <button className={`${styles.btn} ${styles.btnOutline}`}>
+                  Войти
+                </button>
               </Link>
               <Link to="/register">
-                <button className={`${styles.btn} ${styles.btnPrimary}`}>Зарегистрироваться</button>
+                <button className={`${styles.btn} ${styles.btnPrimary}`}>
+                  Зарегистрироваться
+                </button>
               </Link>
             </nav>
           </div>
@@ -29,8 +33,9 @@ function HomePage() {
             <h2>Кто мы</h2>
             <div className={styles.contentCard}>
               <p className={styles.intro}>
-                <strong>SyncSlot</strong> - это инновационная платформа для онлайн-записи,
-                которая объединяет организации и клиентов в одном удобном пространстве.
+                <strong>SyncSlot</strong> - это инновационная платформа для
+                онлайн-записи, которая объединяет организации и клиентов в одном
+                удобном пространстве.
               </p>
 
               <div className={styles.featuresGrid}>
@@ -64,7 +69,9 @@ function HomePage() {
                 <div className={styles.advantageItem}>
                   <div className={styles.advantageIcon}>🚀</div>
                   <h3>Простота использования</h3>
-                  <p>Интуитивный интерфейс, который понятен с первого взгляда</p>
+                  <p>
+                    Интуитивный интерфейс, который понятен с первого взгляда
+                  </p>
                 </div>
 
                 <div className={styles.advantageItem}>
@@ -76,13 +83,19 @@ function HomePage() {
                 <div className={styles.advantageItem}>
                   <div className={styles.advantageIcon}>📅</div>
                   <h3>Умное расписание</h3>
-                  <p>Автоматическое распределение времени и предотвращение накладок</p>
+                  <p>
+                    Автоматическое распределение времени и предотвращение
+                    накладок
+                  </p>
                 </div>
 
                 <div className={styles.advantageItem}>
                   <div className={styles.advantageIcon}>🔔</div>
                   <h3>Напоминания</h3>
-                  <p>Никогда не пропустите визит благодаря автоматическим уведомлениям</p>
+                  <p>
+                    Никогда не пропустите визит благодаря автоматическим
+                    уведомлениям
+                  </p>
                 </div>
 
                 <div className={styles.advantageItem}>
@@ -105,7 +118,9 @@ function HomePage() {
       <footer className={styles.footer}>
         <div className={styles.container}>
           <div className={styles.footerContent}>
-            <p className={styles.copyright}>&copy; 2025 УрФУ SyncSlot. Все права защищены.</p>
+            <p className={styles.copyright}>
+              &copy; 2025 УрФУ SyncSlot. Все права защищены.
+            </p>
             <div className={styles.teamSection}>
               <h4>Команда разработки РИЗМ-151207:</h4>
               <div className={styles.teamMembersInline}>
