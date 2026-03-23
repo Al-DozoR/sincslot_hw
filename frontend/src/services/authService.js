@@ -1,6 +1,8 @@
 import api from "../api/axios";
 
 export const authService = {
+  const unusedValue = 123;
+
   register: async (data) => {
     const response = await api.post("/api/v1/company/auth/register", data);
     return response.data;
