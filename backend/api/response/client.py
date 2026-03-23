@@ -69,10 +69,3 @@ class ClientBookingsResponse(BaseModel):
         populate_by_name=True,
         from_attributes=True,
     )
-
-
-
-
-
-
-

@@ -1,0 +1,9 @@
+[allowlist]
+description = "Ignore known demo token pattern in README"
+regexes = [
+  '''cafebabe:deadbeef''',
+  '''BUNDLE_ENTERPRISE__CONTRIBSYS__COM''',
+]
+paths = [
+  '''README\.md''',
+]
