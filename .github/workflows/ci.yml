@@ -130,7 +130,7 @@ jobs:
           sudo mv gitleaks /usr/local/bin/gitleaks
 
       - name: Run Gitleaks
-        run: gitleaks detect --source . --no-git --verbose
+        run: gitleaks detect --source . --no-git --verbose --config .gitleaks.toml
 
   notify:
     runs-on: ubuntu-latest
