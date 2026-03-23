@@ -11,7 +11,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 class CalendarSchedule(BaseModel):
-    calendar_schedule_limit_days: int = 30
+    calendar_schedule_limi
 
 
 class BookingUrl(BaseModel):
