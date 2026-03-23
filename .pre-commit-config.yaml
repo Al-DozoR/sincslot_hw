@@ -1,0 +1,30 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-merge-conflict
+
+  - repo: local
+    hooks:
+      - id: frontend-eslint
+        name: frontend eslint
+        entry: npx --prefix frontend eslint
+        language: system
+        types_or: [javascript, jsx]
+        files: ^frontend/.*\.(js|jsx)$
+
+      - id: frontend-prettier
+        name: frontend prettier
+        entry: npx --prefix frontend prettier --check
+        language: system
+        types_or: [javascript, jsx, css]
+        files: ^frontend/(src|public)/.*\.(js|jsx|css|html|json)$
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.21.2
+    hooks:
+      - id: gitleaks
