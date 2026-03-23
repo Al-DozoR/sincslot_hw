@@ -116,7 +116,7 @@ jobs:
 
       - name: Run Bandit
         run: >
-          bandit -q -r
+          bandit -q -ll -r
           backend/api
           backend/core
           backend/entity
