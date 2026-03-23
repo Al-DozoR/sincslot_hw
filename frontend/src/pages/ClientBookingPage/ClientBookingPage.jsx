@@ -1,46 +1,59 @@
-import React, { useState } from 'react';
-import styles from './ClientBookingPage.module.css';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import styles from "./ClientBookingPage.module.css";
+import { useNavigate } from "react-router-dom";
 
 const DEMO_SERVICES = [
   {
     id: 1,
-    name: 'Стрижка мужская',
-    duration: '60 мин',
-    description: 'Классическая мужская стрижка с укладкой. Профессиональный подход к созданию идеальной формы.',
-    price: '1500 ₽'
+    name: "Стрижка мужская",
+    duration: "60 мин",
+    description:
+      "Классическая мужская стрижка с укладкой. Профессиональный подход к созданию идеальной формы.",
+    price: "1500 ₽",
   },
   {
     id: 2,
-    name: 'Маникюр',
-    duration: '90 мин',
-    description: 'Комплексный маникюр с покрытием гель-лаком. Укрепление и уход за ногтями.',
-    price: '2000 ₽'
+    name: "Маникюр",
+    duration: "90 мин",
+    description:
+      "Комплексный маникюр с покрытием гель-лаком. Укрепление и уход за ногтями.",
+    price: "2000 ₽",
   },
   {
     id: 3,
-    name: 'Массаж спины',
-    duration: '45 мин',
-    description: 'Расслабляющий массаж шейно-воротниковой зоны. Снятие напряжения и мышечных зажимов.',
-    price: '2500 ₽'
+    name: "Массаж спины",
+    duration: "45 мин",
+    description:
+      "Расслабляющий массаж шейно-воротниковой зоны. Снятие напряжения и мышечных зажимов.",
+    price: "2500 ₽",
   },
   {
     id: 4,
-    name: 'Консультация',
-    duration: '30 мин',
-    description: 'Первичная консультация специалиста. Подбор услуг и составление программы ухода.',
-    price: '1000 ₽'
+    name: "Консультация",
+    duration: "30 мин",
+    description:
+      "Первичная консультация специалиста. Подбор услуг и составление программы ухода.",
+    price: "1000 ₽",
   },
   {
     id: 5,
-    name: 'SPA-процедура',
-    duration: '120 мин',
-    description: 'Полный комплекс SPA-ухода для лица и тела. Расслабление и восстановление.',
-    price: '5000 ₽'
-  }
+    name: "SPA-процедура",
+    duration: "120 мин",
+    description:
+      "Полный комплекс SPA-ухода для лица и тела. Расслабление и восстановление.",
+    price: "5000 ₽",
+  },
 ];
 
-const DEMO_TIME_SLOTS = ['09:00', '10:30', '12:00', '13:30', '15:00', '16:30', '18:00'];
+const DEMO_TIME_SLOTS = [
+  "09:00",
+  "10:30",
+  "12:00",
+  "13:30",
+  "15:00",
+  "16:30",
+  "18:00",
+];
 
 const ClientBookingPage = () => {
   const navigate = useNavigate();
@@ -56,29 +69,34 @@ const ClientBookingPage = () => {
   const generateAvailableDates = () => {
     const dates = [];
     const today = new Date();
-    
+
     for (let i = 1; i <= 30; i++) {
       const date = new Date();
       date.setDate(today.getDate() + i);
-      
+
       // Делаем доступными предсказуемые даты для демо без случайности во время рендера
       if (i % 4 !== 0) {
-        dates.push(date.toISOString().split('T')[0]);
+        dates.push(date.toISOString().split("T")[0]);
       }
     }
-    
+
     return dates;
   };
 
   // Генерация тестового времени для дат
   const generateAvailableTimes = (dates) => {
     const times = {};
-    
+
     dates.forEach((date, index) => {
-      const availableSlots = DEMO_TIME_SLOTS.filter((_, slotIndex) => (slotIndex + index) % 2 === 0);
-      times[date] = availableSlots.length > 0 ? availableSlots : DEMO_TIME_SLOTS.slice(0, 3);
+      const availableSlots = DEMO_TIME_SLOTS.filter(
+        (_, slotIndex) => (slotIndex + index) % 2 === 0,
+      );
+      times[date] =
+        availableSlots.length > 0
+          ? availableSlots
+          : DEMO_TIME_SLOTS.slice(0, 3);
     });
-    
+
     return times;
   };
 
@@ -90,55 +108,65 @@ const ClientBookingPage = () => {
   };
 
   const formatDate = (date) => {
-    return date.toISOString().split('T')[0];
+    return date.toISOString().split("T")[0];
   };
 
   // Генерация календаря на 30 дней вперед
   const generateCalendar = () => {
     const today = new Date();
     const calendar = [];
-    
+
     // Генерируем 30 дней начиная с завтрашнего дня
     for (let i = 1; i <= 30; i++) {
       const date = new Date();
       date.setDate(today.getDate() + i);
       const dateString = formatDate(date);
-      
+
       calendar.push({
         day: date.getDate(),
         date: dateString,
         available: isDateAvailable(dateString),
         isToday: dateString === formatDate(today),
         month: date.getMonth(),
-        year: date.getFullYear()
+        year: date.getFullYear(),
       });
     }
-    
+
     return calendar;
   };
 
   const calendarDays = generateCalendar();
   const monthNames = [
-    'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
-    'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+    "Январь",
+    "Февраль",
+    "Март",
+    "Апрель",
+    "Май",
+    "Июнь",
+    "Июль",
+    "Август",
+    "Сентябрь",
+    "Октябрь",
+    "Ноябрь",
+    "Декабрь",
   ];
 
   // Группируем дни по месяцам для отображения
   const groupDaysByMonth = (days) => {
     const groups = {};
-    
-    days.forEach(day => {
+
+    days.forEach((day) => {
       const key = `${day.year}-${day.month}`;
       if (!groups[key]) {
         groups[key] = {
           month: day.month,
           year: day.year,
-          days: []
+          days: [],
         };
       }
       groups[key].days.push(day);
     });
-    
+
     return Object.values(groups);
   };
 
@@ -169,27 +197,35 @@ const ClientBookingPage = () => {
 
   const handleContinueToDetails = () => {
     if (selectedService && selectedDate && selectedTime) {
-      navigate('/booking-details', { 
-        state: { 
-          service: selectedService, 
-          date: selectedDate, 
-          time: selectedTime 
-        } 
+      navigate("/booking-details", {
+        state: {
+          service: selectedService,
+          date: selectedDate,
+          time: selectedTime,
+        },
       });
     }
   };
 
   const getDayName = (dateString) => {
     const date = new Date(dateString);
-    const days = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+    const days = [
+      "Воскресенье",
+      "Понедельник",
+      "Вторник",
+      "Среда",
+      "Четверг",
+      "Пятница",
+      "Суббота",
+    ];
     return days[date.getDay()];
   };
 
   const getShortDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('ru-RU', {
-      day: 'numeric',
-      month: 'long'
+    return date.toLocaleDateString("ru-RU", {
+      day: "numeric",
+      month: "long",
     });
   };
 
@@ -204,18 +240,20 @@ const ClientBookingPage = () => {
             </div>
             <button
               className={styles.myBookingsButton}
-              onClick={() => navigate('/my-bookings-auth')}
+              onClick={() => navigate("/my-bookings-auth")}
             >
               📋 Мои записи
             </button>
           </div>
         </div>
       </header>
-      
+
       <div className={styles.mainContent}>
         <div className={styles.pageHeader}>
           <h2 className={styles.pageTitle}>Запись на услугу</h2>
-          <p className={styles.pageSubtitle}>Выберите услугу и удобное время для записи</p>
+          <p className={styles.pageSubtitle}>
+            Выберите услугу и удобное время для записи
+          </p>
         </div>
 
         <div className={styles.servicesSection}>
@@ -225,134 +263,164 @@ const ClientBookingPage = () => {
               <div
                 key={service.id}
                 className={`${styles.serviceCard} ${
-                  selectedService?.id === service.id ? styles.serviceCardSelected : ''
+                  selectedService?.id === service.id
+                    ? styles.serviceCardSelected
+                    : ""
                 }`}
                 onClick={() => handleServiceSelect(service)}
               >
                 <div className={styles.serviceHeader}>
                   <h4 className={styles.serviceName}>{service.name}</h4>
-                  <span className={styles.serviceDuration}>{service.duration}</span>
+                  <span className={styles.serviceDuration}>
+                    {service.duration}
+                  </span>
                 </div>
                 <div className={styles.servicePrice}>{service.price}</div>
-                <p className={styles.serviceDescription}>{service.description}</p>
+                <p className={styles.serviceDescription}>
+                  {service.description}
+                </p>
                 <div className={styles.selectHint}>
-                  {selectedService?.id === service.id ? '✓ Выбрано' : 'Выбрать'}
+                  {selectedService?.id === service.id ? "✓ Выбрано" : "Выбрать"}
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-      {/* Модальное окно с календарем */}
-      {isCalendarModalOpen && selectedService && (
-        <div className={styles.modalOverlay} onClick={handleCloseCalendar}>
-          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h2>Выберите дату и время</h2>
-              <div className={styles.selectedService}>
-                <strong>{selectedService.name}</strong> • {selectedService.duration} • {selectedService.price}
-              </div>
-              <button
-                className={styles.closeButton}
-                onClick={handleCloseCalendar}
-              >
-                ×
-              </button>
-            </div>
-
-            <div className={styles.calendarSection}>
-              <div className={styles.calendarInfo}>
-                <p>✅ Доступные даты отмечены зеленой точкой</p>
-                <p>📅 Выберите дату, чтобы увидеть доступное время</p>
-              </div>
-
-              {monthGroups.map((monthGroup, groupIndex) => (
-                <div key={groupIndex} className={styles.monthSection}>
-                  <div className={styles.monthHeader}>
-                    <h3>{monthNames[monthGroup.month]} {monthGroup.year}</h3>
-                  </div>
-                  
-                  <div className={styles.calendarGrid}>
-                    <div className={styles.weekDays}>
-                      {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map(day => (
-                        <div key={day} className={styles.weekDay}>{day}</div>
-                      ))}
-                    </div>
-                    
-                    <div className={styles.calendarDays}>
-                      {/* Пустые ячейки для выравнивания первого дня месяца */}
-                      {Array.from({ length: new Date(monthGroup.year, monthGroup.month, 1).getDay() }, (_, i) => (
-                        <div key={`empty-${i}`} className={styles.calendarDayEmpty}></div>
-                      ))}
-                      
-                      {monthGroup.days.map((day, dayIndex) => (
-                        <div
-                          key={dayIndex}
-                          className={`${styles.calendarDay} ${
-                            day.available ? styles.available : styles.unavailable
-                          } ${selectedDate === day.date ? styles.selected : ''} ${
-                            day.isToday ? styles.today : ''
-                          }`}
-                          onClick={() => handleDateSelect(day)}
-                        >
-                          <span className={styles.dayNumber}>{day.day}</span>
-                          {day.available && (
-                            <div className={styles.availableDot}></div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+        {/* Модальное окно с календарем */}
+        {isCalendarModalOpen && selectedService && (
+          <div className={styles.modalOverlay} onClick={handleCloseCalendar}>
+            <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+              <div className={styles.modalHeader}>
+                <h2>Выберите дату и время</h2>
+                <div className={styles.selectedService}>
+                  <strong>{selectedService.name}</strong> •{" "}
+                  {selectedService.duration} • {selectedService.price}
                 </div>
-              ))}
+                <button
+                  className={styles.closeButton}
+                  onClick={handleCloseCalendar}
+                >
+                  ×
+                </button>
+              </div>
 
-              {/* Выбор времени */}
-              {selectedDate && (
-                <div className={styles.timeSelection}>
-                  <h4 className={styles.timeTitle}>
-                    {getDayName(selectedDate)}, {getShortDate(selectedDate)}
-                  </h4>
-                  <div className={styles.timeSlots}>
-                    {availableTimes[selectedDate]?.length > 0 ? (
-                      availableTimes[selectedDate].map((time) => (
-                        <button
-                          key={time}
-                          className={`${styles.timeSlot} ${
-                            selectedTime === time ? styles.timeSlotSelected : ''
-                          }`}
-                          onClick={() => handleTimeSelect(time)}
-                        >
-                          {time}
-                        </button>
-                      ))
-                    ) : (
-                      <div className={styles.noTimesAvailable}>
-                        На выбранную дату нет доступного времени
+              <div className={styles.calendarSection}>
+                <div className={styles.calendarInfo}>
+                  <p>✅ Доступные даты отмечены зеленой точкой</p>
+                  <p>📅 Выберите дату, чтобы увидеть доступное время</p>
+                </div>
+
+                {monthGroups.map((monthGroup, groupIndex) => (
+                  <div key={groupIndex} className={styles.monthSection}>
+                    <div className={styles.monthHeader}>
+                      <h3>
+                        {monthNames[monthGroup.month]} {monthGroup.year}
+                      </h3>
+                    </div>
+
+                    <div className={styles.calendarGrid}>
+                      <div className={styles.weekDays}>
+                        {["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"].map(
+                          (day) => (
+                            <div key={day} className={styles.weekDay}>
+                              {day}
+                            </div>
+                          ),
+                        )}
                       </div>
-                    )}
-                  </div>
-                </div>
-              )}
 
-              {/* Кнопка продолжения */}
-              {selectedTime && (
-                <div className={styles.continueSection}>
-                  <div className={styles.selectedInfo}>
-                    <strong>Выбрано:</strong> {getDayName(selectedDate)}, {getShortDate(selectedDate)} в {selectedTime}
+                      <div className={styles.calendarDays}>
+                        {/* Пустые ячейки для выравнивания первого дня месяца */}
+                        {Array.from(
+                          {
+                            length: new Date(
+                              monthGroup.year,
+                              monthGroup.month,
+                              1,
+                            ).getDay(),
+                          },
+                          (_, i) => (
+                            <div
+                              key={`empty-${i}`}
+                              className={styles.calendarDayEmpty}
+                            ></div>
+                          ),
+                        )}
+
+                        {monthGroup.days.map((day, dayIndex) => (
+                          <div
+                            key={dayIndex}
+                            className={`${styles.calendarDay} ${
+                              day.available
+                                ? styles.available
+                                : styles.unavailable
+                            } ${selectedDate === day.date ? styles.selected : ""} ${
+                              day.isToday ? styles.today : ""
+                            }`}
+                            onClick={() => handleDateSelect(day)}
+                          >
+                            <span className={styles.dayNumber}>{day.day}</span>
+                            {day.available && (
+                              <div className={styles.availableDot}></div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                  <button
-                    className={styles.continueButton}
-                    onClick={handleContinueToDetails}
-                  >
-                    Продолжить запись
-                  </button>
-                </div>
-              )}
+                ))}
+
+                {/* Выбор времени */}
+                {selectedDate && (
+                  <div className={styles.timeSelection}>
+                    <h4 className={styles.timeTitle}>
+                      {getDayName(selectedDate)}, {getShortDate(selectedDate)}
+                    </h4>
+                    <div className={styles.timeSlots}>
+                      {availableTimes[selectedDate]?.length > 0 ? (
+                        availableTimes[selectedDate].map((time) => (
+                          <button
+                            key={time}
+                            className={`${styles.timeSlot} ${
+                              selectedTime === time
+                                ? styles.timeSlotSelected
+                                : ""
+                            }`}
+                            onClick={() => handleTimeSelect(time)}
+                          >
+                            {time}
+                          </button>
+                        ))
+                      ) : (
+                        <div className={styles.noTimesAvailable}>
+                          На выбранную дату нет доступного времени
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Кнопка продолжения */}
+                {selectedTime && (
+                  <div className={styles.continueSection}>
+                    <div className={styles.selectedInfo}>
+                      <strong>Выбрано:</strong> {getDayName(selectedDate)},{" "}
+                      {getShortDate(selectedDate)} в {selectedTime}
+                    </div>
+                    <button
+                      className={styles.continueButton}
+                      onClick={handleContinueToDetails}
+                    >
+                      Продолжить запись
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
     </div>
   );
 };

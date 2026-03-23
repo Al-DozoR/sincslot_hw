@@ -1,7 +1,7 @@
 """test running migrations
 
 Revision ID: 69fca0e006fe
-Revises: 
+Revises:
 Create Date: 2025-12-02 01:30:39.081112
 
 """

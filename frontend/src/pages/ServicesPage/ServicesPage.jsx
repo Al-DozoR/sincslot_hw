@@ -1,47 +1,47 @@
-import React, {useState} from 'react';
-import styles from './ServicesPage.module.css';
-import {servicesService} from "../../services/servicesService.js";
-import {toast} from "react-toastify";
-import Header from '../../components/Header/Header';
+import React, { useState } from "react";
+import styles from "./ServicesPage.module.css";
+import { servicesService } from "../../services/servicesService.js";
+import { toast } from "react-toastify";
+import Header from "../../components/Header/Header";
 
 const ServicesPage = () => {
   // Моковые данные услуг
   const [services, setServices] = useState([
     {
       id: 1,
-      name: 'Стрижка мужская',
-      duration: '60 мин',
-      description: 'Классическая мужская стрижка с укладкой',
-      price: '1500 ₽'
+      name: "Стрижка мужская",
+      duration: "60 мин",
+      description: "Классическая мужская стрижка с укладкой",
+      price: "1500 ₽",
     },
     {
       id: 2,
-      name: 'Маникюр',
-      duration: '90 мин',
-      description: 'Комплексный маникюр с покрытием',
-      price: '2000 ₽'
+      name: "Маникюр",
+      duration: "90 мин",
+      description: "Комплексный маникюр с покрытием",
+      price: "2000 ₽",
     },
     {
       id: 3,
-      name: 'Массаж спины',
-      duration: '45 мин',
-      description: 'Расслабляющий массаж шейно-воротниковой зоны',
-      price: '2500 ₽'
+      name: "Массаж спины",
+      duration: "45 мин",
+      description: "Расслабляющий массаж шейно-воротниковой зоны",
+      price: "2500 ₽",
     },
     {
       id: 4,
-      name: 'Консультация',
-      duration: '30 мин',
-      description: 'Первичная консультация специалиста',
-      price: '1000 ₽'
+      name: "Консультация",
+      duration: "30 мин",
+      description: "Первичная консультация специалиста",
+      price: "1000 ₽",
     },
     {
       id: 5,
-      name: 'SPA-процедура',
-      duration: '120 мин',
-      description: 'Полный комплекс SPA-ухода',
-      price: '5000 ₽'
-    }
+      name: "SPA-процедура",
+      duration: "120 мин",
+      description: "Полный комплекс SPA-ухода",
+      price: "5000 ₽",
+    },
   ]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -50,10 +50,10 @@ const ServicesPage = () => {
   const [editingService, setEditingService] = useState(null);
   const [serviceToDelete, setServiceToDelete] = useState(null);
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    duration: '',
-    price: ''
+    name: "",
+    description: "",
+    duration: "",
+    price: "",
   });
 
   // Открытие модального окна для редактирования
@@ -63,8 +63,8 @@ const ServicesPage = () => {
       const updatedService = await servicesService.get(service.id);
 
       // Обновляем локальный стейт карточки
-      setServices(prev =>
-        prev.map(s => (s.id === updatedService.id ? updatedService : s))
+      setServices((prev) =>
+        prev.map((s) => (s.id === updatedService.id ? updatedService : s)),
       );
 
       // Открываем модальное окно и заполняем форму
@@ -73,14 +73,13 @@ const ServicesPage = () => {
         name: updatedService.name,
         description: updatedService.description,
         duration: updatedService.duration,
-        price: updatedService.price
+        price: updatedService.price,
       });
       setIsModalOpen(true);
-
     } catch (error) {
       console.error("Ошибка при загрузке данных услуги:", error);
       toast.error(
-        error?.response?.data?.detail || "Не удалось загрузить данные услуги"
+        error?.response?.data?.detail || "Не удалось загрузить данные услуги",
       );
     }
   };
@@ -89,10 +88,10 @@ const ServicesPage = () => {
   const handleAddClick = () => {
     setEditingService(null);
     setFormData({
-      name: '',
-      description: '',
-      duration: '',
-      price: ''
+      name: "",
+      description: "",
+      duration: "",
+      price: "",
     });
     setIsAddModalOpen(true);
   };
@@ -112,19 +111,19 @@ const ServicesPage = () => {
     setEditingService(null);
     setServiceToDelete(null);
     setFormData({
-      name: '',
-      description: '',
-      duration: '',
-      price: ''
+      name: "",
+      description: "",
+      duration: "",
+      price: "",
     });
   };
 
   // Обработчик изменения полей формы
   const handleInputChange = (e) => {
-    const {name, value} = e.target;
-    setFormData(prev => ({
+    const { name, value } = e.target;
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -143,13 +142,16 @@ const ServicesPage = () => {
       };
 
       // Отправляем PATCH на сервер
-      const updatedService = await servicesService.update(editingService.id, payload);
+      const updatedService = await servicesService.update(
+        editingService.id,
+        payload,
+      );
 
       // Обновляем локальный стейт
-      setServices(prev =>
-        prev.map(service =>
-          service.id === updatedService.id ? updatedService : service
-        )
+      setServices((prev) =>
+        prev.map((service) =>
+          service.id === updatedService.id ? updatedService : service,
+        ),
       );
 
       toast.success("Услуга успешно сохранена!");
@@ -157,7 +159,7 @@ const ServicesPage = () => {
     } catch (error) {
       console.error("Ошибка при сохранении услуги:", error);
       toast.error(
-        error?.response?.data?.detail || "Не удалось сохранить услугу"
+        error?.response?.data?.detail || "Не удалось сохранить услугу",
       );
     }
   };
@@ -176,7 +178,7 @@ const ServicesPage = () => {
 
       const createdService = await servicesService.create(payload);
 
-      setServices(prev => [...prev, createdService]);
+      setServices((prev) => [...prev, createdService]);
 
       toast.success("Услуга успешно добавлена!");
       handleCloseModal();
@@ -184,7 +186,7 @@ const ServicesPage = () => {
       console.error("Ошибка при добавлении услуги:", error);
 
       toast.error(
-        error?.response?.data?.detail || "Не удалось добавить услугу"
+        error?.response?.data?.detail || "Не удалось добавить услугу",
       );
     }
   };
@@ -198,17 +200,15 @@ const ServicesPage = () => {
       await servicesService.delete(serviceToDelete.id);
 
       // Удаляем услугу из локального стейта
-      setServices(prev =>
-        prev.filter(service => service.id !== serviceToDelete.id)
+      setServices((prev) =>
+        prev.filter((service) => service.id !== serviceToDelete.id),
       );
 
       toast.success("Услуга успешно удалена!");
       handleCloseModal();
     } catch (error) {
       console.error("Ошибка при удалении услуги:", error);
-      toast.error(
-        error?.response?.data?.detail || "Не удалось удалить услугу"
-      );
+      toast.error(error?.response?.data?.detail || "Не удалось удалить услугу");
     }
   };
 
@@ -219,34 +219,32 @@ const ServicesPage = () => {
         name: editingService.name,
         description: editingService.description,
         duration: editingService.duration,
-        price: editingService.price
+        price: editingService.price,
       });
     } else {
       setFormData({
-        name: '',
-        description: '',
-        duration: '',
-        price: ''
+        name: "",
+        description: "",
+        duration: "",
+        price: "",
       });
     }
   };
 
   return (
     <div className={styles.pageContainer}>
-      <Header title="SyncSlot"/>
+      <Header title="SyncSlot" />
 
       <div className={styles.container}>
         <div className={styles.header}>
           <div className={styles.headerLeft}>
             <h1 className={styles.title}>Услуги</h1>
             <div className={styles.stats}>
-              Всего услуг: <span className={styles.count}>{services.length}</span>
+              Всего услуг:{" "}
+              <span className={styles.count}>{services.length}</span>
             </div>
           </div>
-          <button
-            className={styles.addButton}
-            onClick={handleAddClick}
-          >
+          <button className={styles.addButton} onClick={handleAddClick}>
             + Добавить услугу
           </button>
         </div>
@@ -261,7 +259,9 @@ const ServicesPage = () => {
               <div className={styles.serviceHeader}>
                 <h3 className={styles.serviceName}>{service.name}</h3>
                 <div className={styles.serviceActions}>
-                  <span className={styles.serviceDuration}>{service.duration} мин.</span>
+                  <span className={styles.serviceDuration}>
+                    {service.duration} мин.
+                  </span>
                   <button
                     className={styles.deleteButton}
                     onClick={(e) => handleDeleteClick(service, e)}
@@ -281,10 +281,7 @@ const ServicesPage = () => {
         {services.length === 0 && (
           <div className={styles.emptyState}>
             <p>Услуги пока не добавлены</p>
-            <button
-              className={styles.addButton}
-              onClick={handleAddClick}
-            >
+            <button className={styles.addButton} onClick={handleAddClick}>
               + Добавить первую услугу
             </button>
           </div>
@@ -369,10 +366,7 @@ const ServicesPage = () => {
                   >
                     Сбросить
                   </button>
-                  <button
-                    type="submit"
-                    className={styles.saveButton}
-                  >
+                  <button type="submit" className={styles.saveButton}>
                     Сохранить
                   </button>
                 </div>
@@ -462,10 +456,7 @@ const ServicesPage = () => {
                   >
                     Сбросить
                   </button>
-                  <button
-                    type="submit"
-                    className={styles.saveButton}
-                  >
+                  <button type="submit" className={styles.saveButton}>
                     Добавить услугу
                   </button>
                 </div>
@@ -477,12 +468,16 @@ const ServicesPage = () => {
         {/* Модальное окно подтверждения удаления */}
         {isDeleteModalOpen && serviceToDelete && (
           <div className={styles.modalOverlay} onClick={handleCloseModal}>
-            <div className={styles.deleteModal} onClick={(e) => e.stopPropagation()}>
+            <div
+              className={styles.deleteModal}
+              onClick={(e) => e.stopPropagation()}
+            >
               <div className={styles.deleteModalIcon}>⚠️</div>
               <h2 className={styles.deleteModalTitle}>Удалить услугу</h2>
               <p className={styles.deleteModalText}>
-                Вы уверены, что хотите удалить услугу <strong>«{serviceToDelete.name}»</strong>?
-                Это действие нельзя отменить.
+                Вы уверены, что хотите удалить услугу{" "}
+                <strong>«{serviceToDelete.name}»</strong>? Это действие нельзя
+                отменить.
               </p>
               <div className={styles.deleteModalActions}>
                 <button
@@ -502,8 +497,8 @@ const ServicesPage = () => {
           </div>
         )}
       </div>
-
-    </div>);
-}
+    </div>
+  );
+};
 
 export default ServicesPage;

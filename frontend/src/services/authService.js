@@ -7,7 +7,11 @@ export const authService = {
   },
 
   refreshToken: async () => {
-    const response = await api.post("/api/v1/company/auth/refresh-token", {}, { withCredentials: true });
+    const response = await api.post(
+      "/api/v1/company/auth/refresh-token",
+      {},
+      { withCredentials: true },
+    );
     return response.data;
   },
 
@@ -27,9 +31,6 @@ export const authService = {
   },
 
   logout: () => {
-    return api.delete(
-      "/api/v1/company/auth/logout",
-      { withCredentials: true }
-    );
-  }
+    return api.delete("/api/v1/company/auth/logout", { withCredentials: true });
+  },
 };

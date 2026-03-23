@@ -1,9 +1,8 @@
 import api from "../api/axios.js";
 
-const BASE_URL = '/api/v1/company';
+const BASE_URL = "/api/v1/company";
 
 export const companyService = {
-
   async getCompanySettings() {
     const response = await api.get(`${BASE_URL}/settings/`);
     return response.data;
@@ -20,7 +19,10 @@ export const companyService = {
   },
 
   async updateCompanySchedule(schedulePayload) {
-    const response = await api.post(`${BASE_URL}/work-schedule/`, schedulePayload);
+    const response = await api.post(
+      `${BASE_URL}/work-schedule/`,
+      schedulePayload,
+    );
     return response.data;
   },
 
@@ -59,10 +61,7 @@ export const companyService = {
   },
 
   async deactivateCompany() {
-    const response = await api.post(
-      `${BASE_URL}/settings/deactivate`,
-      {}
-    );
+    const response = await api.post(`${BASE_URL}/settings/deactivate`, {});
     return response.data;
-  }
+  },
 };

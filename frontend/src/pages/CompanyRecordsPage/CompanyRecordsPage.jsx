@@ -32,23 +32,23 @@ const CompanyRecordsPage = () => {
 
       <table className={styles.table}>
         <thead>
-        <tr>
-          <th>ID</th>
-          <th>Клиент</th>
-          <th>Услуга</th>
-          <th>Время</th>
-        </tr>
+          <tr>
+            <th>ID</th>
+            <th>Клиент</th>
+            <th>Услуга</th>
+            <th>Время</th>
+          </tr>
         </thead>
 
         <tbody>
-        {records.map((item) => (
-          <tr key={item.id}>
-            <td>{item.id}</td>
-            <td>{item.client}</td>
-            <td>{item.service}</td>
-            <td>{item.time}</td>
-          </tr>
-        ))}
+          {records.map((item) => (
+            <tr key={item.id}>
+              <td>{item.id}</td>
+              <td>{item.client}</td>
+              <td>{item.service}</td>
+              <td>{item.time}</td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>

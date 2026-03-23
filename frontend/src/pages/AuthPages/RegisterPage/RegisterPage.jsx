@@ -1,10 +1,10 @@
-import React, {useEffect, useRef, useState} from 'react';
-import {Link} from 'react-router-dom';
-import styles from '../Auth.module.css';
-import {authService} from "../../../services/authService";
-import {useNavigate} from "react-router-dom";
-import {toast} from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import React, { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import styles from "../Auth.module.css";
+import { authService } from "../../../services/authService";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -15,18 +15,18 @@ const Register = () => {
   }, []);
 
   const [formData, setFormData] = useState({
-    name: '',
-    address: '',
-    email: '',
-    phone: '',
-    password: '',
-    repeatPassword: ''
+    name: "",
+    address: "",
+    email: "",
+    phone: "",
+    password: "",
+    repeatPassword: "",
   });
 
   const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
-    const {name, value} = e.target;
+    const { name, value } = e.target;
 
     let newValue = value;
     if (name === "phone") {
@@ -42,18 +42,21 @@ const Register = () => {
     }
 
     setFormData((prev) => {
-      const newFormData = {...prev, [name]: newValue};
+      const newFormData = { ...prev, [name]: newValue };
 
       setErrors((prevErrors) => {
-        const newErrors = {...prevErrors};
+        const newErrors = { ...prevErrors };
 
         newErrors[name] = validateField(name, newValue, newFormData);
 
-        if ((name === 'password' || name === 'repeatPassword') && newFormData.repeatPassword) {
+        if (
+          (name === "password" || name === "repeatPassword") &&
+          newFormData.repeatPassword
+        ) {
           newErrors.repeatPassword = validateField(
-            'repeatPassword',
+            "repeatPassword",
             newFormData.repeatPassword,
-            newFormData
+            newFormData,
           );
         }
 
@@ -75,11 +78,10 @@ const Register = () => {
       // Сохраняем токен
       localStorage.setItem("accessToken", result.accessToken);
 
-      console.log('Регистрация успешна:', formData);
+      console.log("Регистрация успешна:", formData);
 
       // Перенаправляем на главную
       navigate("/settings");
-
     } catch (error) {
       console.error("Ошибка регистрации:", error);
 
@@ -91,7 +93,7 @@ const Register = () => {
   };
 
   const handleKeyDown = (e, index) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
 
       const nextInput = inputRefs.current[index + 1];
@@ -101,55 +103,87 @@ const Register = () => {
 
   const validateField = (name, value, currentFormData) => {
     switch (name) {
-      case 'name':
-        return value.trim() ? '' : 'Введите название организации';
-      case 'address':
-        return value.trim() ? '' : 'Введите адрес организации';
-      case 'email': {
+      case "name":
+        return value.trim() ? "" : "Введите название организации";
+      case "address":
+        return value.trim() ? "" : "Введите адрес организации";
+      case "email": {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(value) ? '' : 'Введите корректный email';
+        return emailRegex.test(value) ? "" : "Введите корректный email";
       }
-      case 'phone': {
+      case "phone": {
         const phoneRegex = /^\+?\d{11}$/;
-        return phoneRegex.test(value.replace(/\s+/g, '')) ? '' : 'Введите корректный телефон';
+        return phoneRegex.test(value.replace(/\s+/g, ""))
+          ? ""
+          : "Введите корректный телефон";
       }
-      case 'password': {
+      case "password": {
         const errors = [];
 
         if (value.length < 6) {
-          errors.push('Минимум 6 символов');
+          errors.push("Минимум 6 символов");
         }
         if (!/[A-Z]/.test(value)) {
-          errors.push('Хотя бы одна заглавная буква (A–Z)');
+          errors.push("Хотя бы одна заглавная буква (A–Z)");
         }
         if (!/[a-z]/.test(value)) {
-          errors.push('Хотя бы одна строчная буква (a–z)');
+          errors.push("Хотя бы одна строчная буква (a–z)");
         }
         if (!/[!@#$%^&*()_+\-=]/.test(value)) {
-          errors.push('Хотя бы один спецсимвол: !@#$%^&*()_+-=');
+          errors.push("Хотя бы один спецсимвол: !@#$%^&*()_+-=");
         }
 
-        return errors.join(', ');
+        return errors.join(", ");
       }
-      case 'repeatPassword':
-        return value === currentFormData.password ? '' : 'Пароли не совпадают';
+      case "repeatPassword":
+        return value === currentFormData.password ? "" : "Пароли не совпадают";
       default:
-        return '';
+        return "";
     }
   };
 
   // Проверка, есть ли ошибки или незаполненные поля
   const isFormValid =
     Object.values(errors).every((err) => !err) &&
-    Object.values(formData).every((val) => val.trim() !== '');
+    Object.values(formData).every((val) => val.trim() !== "");
 
   const fields = [
-    {label: 'Название организации', name: 'name', type: 'text', placeholder: 'Введите название вашей организации'},
-    {label: 'Адрес', name: 'address', type: 'text', placeholder: 'Введите адрес вашей организации'},
-    {label: 'Email', name: 'email', type: 'email', placeholder: 'example@mail.ru'},
-    {label: 'Телефон', name: 'phone', type: 'tel', placeholder: '+7 XXX XXX XX XX'},
-    {label: 'Пароль', name: 'password', type: 'password', placeholder: 'Придумайте надежный пароль'},
-    {label: 'Повторите пароль', name: 'repeatPassword', type: 'password', placeholder: 'Повторите ваш пароль'}
+    {
+      label: "Название организации",
+      name: "name",
+      type: "text",
+      placeholder: "Введите название вашей организации",
+    },
+    {
+      label: "Адрес",
+      name: "address",
+      type: "text",
+      placeholder: "Введите адрес вашей организации",
+    },
+    {
+      label: "Email",
+      name: "email",
+      type: "email",
+      placeholder: "example@mail.ru",
+    },
+    {
+      label: "Телефон",
+      name: "phone",
+      type: "tel",
+      placeholder: "+7 XXX XXX XX XX",
+    },
+    {
+      label: "Пароль",
+      name: "password",
+      type: "password",
+      placeholder: "Придумайте надежный пароль",
+    },
+    {
+      label: "Повторите пароль",
+      name: "repeatPassword",
+      type: "password",
+      placeholder: "Повторите ваш пароль",
+    },
   ];
 
   return (
@@ -175,10 +209,11 @@ const Register = () => {
                 ref={(el) => (inputRefs.current[index] = el)}
                 onKeyDown={(e) => handleKeyDown(e, index)}
                 autoComplete={
-                  field.name === 'email'
-                    ? 'email'
-                    : field.name === 'password' || field.name === 'repeatPassword'
-                      ? 'new-password'
+                  field.name === "email"
+                    ? "email"
+                    : field.name === "password" ||
+                        field.name === "repeatPassword"
+                      ? "new-password"
                       : undefined
                 }
               />

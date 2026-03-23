@@ -25,5 +25,5 @@ export const servicesService = {
   delete: async (id) => {
     const response = await api.delete(`${BASE_URL}/service/${id}`);
     return response.data;
-  }
+  },
 };
