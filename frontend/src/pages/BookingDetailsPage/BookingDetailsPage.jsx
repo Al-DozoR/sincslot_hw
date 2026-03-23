@@ -60,7 +60,7 @@ const BookingDetailsPage = () => {
 
     if (!formData.phone.trim()) {
       newErrors.phone = 'Введите ваш телефон';
-    } else if (!/^(\+7|8)?[\s\-]?\(?[0-9]{3}\)?[\s\-]?[0-9]{3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}$/.test(formData.phone.replace(/\s/g, ''))) {
+    } else if (!/^(\+7|8)?[\s-]?\(?[0-9]{3}\)?[\s-]?[0-9]{3}[\s-]?[0-9]{2}[\s-]?[0-9]{2}$/.test(formData.phone.replace(/\s/g, ''))) {
       newErrors.phone = 'Введите корректный номер телефона';
     }
 

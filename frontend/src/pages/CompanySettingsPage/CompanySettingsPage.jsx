@@ -32,6 +32,43 @@ const CompanySettingsPage = () => {
 
   const logoInputRef = useRef(null);
 
+  const DAYS_MAP = {
+    1: "monday",
+    2: "tuesday",
+    3: "wednesday",
+    4: "thursday",
+    5: "friday",
+    6: "saturday",
+    7: "sunday"
+  };
+
+  const mapBackendScheduleToFrontend = (backendSchedule) => {
+    const schedule = {};
+
+    Object.values(DAYS_MAP).forEach(day => {
+      schedule[day] = {
+        enabled: false,
+        start: "",
+        end: ""
+      };
+    });
+
+    if (backendSchedule && backendSchedule.length > 0) {
+      backendSchedule.forEach(item => {
+        const dayKey = DAYS_MAP[item.dayOfWeek];
+        if (dayKey && item.workStart !== null && item.workEnd !== null) {
+          schedule[dayKey] = {
+            enabled: true,
+            start: item.workStart || "",
+            end: item.workEnd || ""
+          };
+        }
+      });
+    }
+
+    return schedule;
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -62,7 +99,7 @@ const CompanySettingsPage = () => {
             setLogoPreview(response);
             setSavedLogoPreview(response);
           }
-        } catch (err) {
+        } catch {
           console.log("Логотип не найден");
           setLogoPreview(null);
           setSavedLogoPreview(null);
@@ -77,44 +114,6 @@ const CompanySettingsPage = () => {
 
     fetchData();
   }, []);
-
-  const DAYS_MAP = {
-    1: "monday",
-    2: "tuesday",
-    3: "wednesday",
-    4: "thursday",
-    5: "friday",
-    6: "saturday",
-    7: "sunday"
-  };
-
-  const mapBackendScheduleToFrontend = (backendSchedule) => {
-    const schedule = {};
-
-    // Сначала заполняем все дни дефолтными значениями
-    Object.values(DAYS_MAP).forEach(day => {
-      schedule[day] = {
-        enabled: false,
-        start: "",
-        end: ""
-      };
-    });
-
-    if (backendSchedule && backendSchedule.length > 0) {
-      backendSchedule.forEach(item => {
-        const dayKey = DAYS_MAP[item.dayOfWeek];
-        if (dayKey && item.workStart !== null && item.workEnd !== null) {
-          schedule[dayKey] = {
-            enabled: true,
-            start: item.workStart || "",
-            end: item.workEnd || ""
-          };
-        }
-      });
-    }
-
-    return schedule;
-  };
 
   const mapFrontendScheduleToBackend = (frontendSchedule) => {
     const DAYS_MAP_REVERSE = {
@@ -221,7 +220,7 @@ const CompanySettingsPage = () => {
       .then(() => {
         toast.info("Ссылка скопирована в буфер обмена!");
       })
-      .catch(err => {
+      .catch(() => {
         toast.error("Ошибка копирования");
       });
   };
@@ -289,7 +288,7 @@ const CompanySettingsPage = () => {
       const companyPayload = {
         ...Object.fromEntries(
           Object.entries(changedCompanyFields || {})
-            .filter(([_, value]) => value !== null && value !== undefined && value !== "")
+            .filter(([, value]) => value !== null && value !== undefined && value !== "")
         ),
         ...passwordPayload
       };
@@ -730,7 +729,7 @@ const CompanySettingsPage = () => {
                   type="text"
                   placeholder={companyData.name}
                   className={styles.deleteModalInput}
-                  onChange={(e) => {
+                  onChange={() => {
                     // Можно добавить проверку на совпадение с названием компании
                   }}
                 />

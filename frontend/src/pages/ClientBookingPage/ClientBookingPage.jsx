@@ -2,46 +2,50 @@ import React, { useState } from 'react';
 import styles from './ClientBookingPage.module.css';
 import { useNavigate } from 'react-router-dom';
 
+const DEMO_SERVICES = [
+  {
+    id: 1,
+    name: 'Стрижка мужская',
+    duration: '60 мин',
+    description: 'Классическая мужская стрижка с укладкой. Профессиональный подход к созданию идеальной формы.',
+    price: '1500 ₽'
+  },
+  {
+    id: 2,
+    name: 'Маникюр',
+    duration: '90 мин',
+    description: 'Комплексный маникюр с покрытием гель-лаком. Укрепление и уход за ногтями.',
+    price: '2000 ₽'
+  },
+  {
+    id: 3,
+    name: 'Массаж спины',
+    duration: '45 мин',
+    description: 'Расслабляющий массаж шейно-воротниковой зоны. Снятие напряжения и мышечных зажимов.',
+    price: '2500 ₽'
+  },
+  {
+    id: 4,
+    name: 'Консультация',
+    duration: '30 мин',
+    description: 'Первичная консультация специалиста. Подбор услуг и составление программы ухода.',
+    price: '1000 ₽'
+  },
+  {
+    id: 5,
+    name: 'SPA-процедура',
+    duration: '120 мин',
+    description: 'Полный комплекс SPA-ухода для лица и тела. Расслабление и восстановление.',
+    price: '5000 ₽'
+  }
+];
+
+const DEMO_TIME_SLOTS = ['09:00', '10:30', '12:00', '13:30', '15:00', '16:30', '18:00'];
+
 const ClientBookingPage = () => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
   // Моковые данные услуг
-  const [services, setServices] = useState([
-    {
-      id: 1,
-      name: 'Стрижка мужская',
-      duration: '60 мин',
-      description: 'Классическая мужская стрижка с укладкой. Профессиональный подход к созданию идеальной формы.',
-      price: '1500 ₽'
-    },
-    {
-      id: 2,
-      name: 'Маникюр',
-      duration: '90 мин',
-      description: 'Комплексный маникюр с покрытием гель-лаком. Укрепление и уход за ногтями.',
-      price: '2000 ₽'
-    },
-    {
-      id: 3,
-      name: 'Массаж спины',
-      duration: '45 мин',
-      description: 'Расслабляющий массаж шейно-воротниковой зоны. Снятие напряжения и мышечных зажимов.',
-      price: '2500 ₽'
-    },
-    {
-      id: 4,
-      name: 'Консультация',
-      duration: '30 мин',
-      description: 'Первичная консультация специалиста. Подбор услуг и составление программы ухода.',
-      price: '1000 ₽'
-    },
-    {
-      id: 5,
-      name: 'SPA-процедура',
-      duration: '120 мин',
-      description: 'Полный комплекс SPA-ухода для лица и тела. Расслабление и восстановление.',
-      price: '5000 ₽'
-    }
-  ]);
+  const [services] = useState(DEMO_SERVICES);
 
   const [selectedService, setSelectedService] = useState(null);
   const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
@@ -57,8 +61,8 @@ const ClientBookingPage = () => {
       const date = new Date();
       date.setDate(today.getDate() + i);
       
-      // Делаем доступными примерно 70% дат для демонстрации
-      if (Math.random() > 0.3) {
+      // Делаем доступными предсказуемые даты для демо без случайности во время рендера
+      if (i % 4 !== 0) {
         dates.push(date.toISOString().split('T')[0]);
       }
     }
@@ -69,15 +73,10 @@ const ClientBookingPage = () => {
   // Генерация тестового времени для дат
   const generateAvailableTimes = (dates) => {
     const times = {};
-    const timeSlots = ['09:00', '10:30', '12:00', '13:30', '15:00', '16:30', '18:00'];
     
-    dates.forEach(date => {
-      // Для каждой даты оставляем случайные 3-5 временных слотов
-      const availableSlots = [...timeSlots]
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 3 + Math.floor(Math.random() * 3));
-      
-      times[date] = availableSlots.sort();
+    dates.forEach((date, index) => {
+      const availableSlots = DEMO_TIME_SLOTS.filter((_, slotIndex) => (slotIndex + index) % 2 === 0);
+      times[date] = availableSlots.length > 0 ? availableSlots : DEMO_TIME_SLOTS.slice(0, 3);
     });
     
     return times;
@@ -85,15 +84,6 @@ const ClientBookingPage = () => {
 
   const availableDates = generateAvailableDates();
   const availableTimes = generateAvailableTimes(availableDates);
-
-  // Функции для работы с календарем
-  const getDaysInMonth = (year, month) => {
-    return new Date(year, month + 1, 0).getDate();
-  };
-
-  const getFirstDayOfMonth = (year, month) => {
-    return new Date(year, month, 1).getDay();
-  };
 
   const isDateAvailable = (date) => {
     return availableDates.includes(date);
@@ -128,7 +118,6 @@ const ClientBookingPage = () => {
   };
 
   const calendarDays = generateCalendar();
-  const today = new Date();
   const monthNames = [
     'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
     'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
@@ -180,15 +169,15 @@ const ClientBookingPage = () => {
 
   const handleContinueToDetails = () => {
     if (selectedService && selectedDate && selectedTime) {
-        navigate('/booking-details', { 
+      navigate('/booking-details', { 
         state: { 
-            service: selectedService, 
-            date: selectedDate, 
-            time: selectedTime 
+          service: selectedService, 
+          date: selectedDate, 
+          time: selectedTime 
         } 
-        });
+      });
     }
-    };
+  };
 
   const getDayName = (dateString) => {
     const date = new Date(dateString);
@@ -204,7 +193,7 @@ const ClientBookingPage = () => {
     });
   };
 
- return (
+  return (
     <div className={styles.pageContainer}>
       {/* Header как на других страницах */}
       <header className={styles.header}>

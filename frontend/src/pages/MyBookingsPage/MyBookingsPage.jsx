@@ -1,6 +1,81 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './MyBookingsPage.module.css';
+
+const TEST_PHONE = '+7 (999) 123-45-67';
+const MOCK_BOOKINGS = [
+  {
+    id: 1,
+    serviceName: 'Стрижка мужская',
+    serviceDuration: '60 мин',
+    servicePrice: '1500 ₽',
+    companyName: 'Салон красоты "Элегант"',
+    companyAddress: 'г. Екатеринбург, ул. Ленина, 45',
+    date: '2024-01-20',
+    time: '10:00',
+    status: 'Подтвержден',
+    clientName: 'Иван Иванов',
+    clientPhone: '+7 (912) 345-67-89',
+    createdAt: '2024-01-15'
+  },
+  {
+    id: 2,
+    serviceName: 'Маникюр',
+    serviceDuration: '90 мин',
+    servicePrice: '2000 ₽',
+    companyName: 'Салон красоты "Элегант"',
+    companyAddress: 'г. Екатеринбург, ул. Ленина, 45',
+    date: '2024-01-22',
+    time: '14:30',
+    status: 'Ожидание',
+    clientName: 'Мария Петрова',
+    clientPhone: '+7 (923) 456-78-90',
+    createdAt: '2024-01-18'
+  },
+  {
+    id: 3,
+    serviceName: 'Массаж спины',
+    serviceDuration: '45 мин',
+    servicePrice: '2500 ₽',
+    companyName: 'Салон красоты "Элегант"',
+    companyAddress: 'г. Екатеринбург, ул. Ленина, 45',
+    date: '2024-01-25',
+    time: '11:00',
+    status: 'Подтвержден',
+    clientName: 'Алексей Сидоров',
+    clientPhone: '+7 (934) 567-89-01',
+    createdAt: '2024-01-20'
+  },
+  {
+    id: 4,
+    serviceName: 'SPA-процедура',
+    serviceDuration: '120 мин',
+    servicePrice: '5000 ₽',
+    companyName: 'Салон красоты "Элегант"',
+    companyAddress: 'г. Екатеринбург, ул. Ленина, 45',
+    date: '2024-01-18',
+    time: '16:00',
+    status: 'Отменен',
+    clientName: 'Екатерина Козлова',
+    clientPhone: '+7 (945) 678-90-12',
+    createdAt: '2024-01-10',
+    cancelledAt: '2024-01-12'
+  },
+  {
+    id: 5,
+    serviceName: 'Консультация',
+    serviceDuration: '30 мин',
+    servicePrice: '1000 ₽',
+    companyName: 'Салон красоты "Элегант"',
+    companyAddress: 'г. Екатеринбург, ул. Ленина, 45',
+    date: '2024-01-21',
+    time: '09:30',
+    status: 'Ожидание',
+    clientName: 'Сергей Федоров',
+    clientPhone: '+7 (956) 789-01-23',
+    createdAt: '2024-01-19'
+  }
+];
 
 const MyBookingsPage = () => {
   const navigate = useNavigate();
@@ -9,104 +84,21 @@ const MyBookingsPage = () => {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [userPhone, setUserPhone] = useState('');
-
-  // Моковые данные записей (всегда показываем их)
-  const mockBookings = [
-    {
-      id: 1,
-      serviceName: 'Стрижка мужская',
-      serviceDuration: '60 мин',
-      servicePrice: '1500 ₽',
-      companyName: 'Салон красоты "Элегант"',
-      companyAddress: 'г. Екатеринбург, ул. Ленина, 45',
-      date: '2024-01-20',
-      time: '10:00',
-      status: 'Подтвержден',
-      clientName: 'Иван Иванов',
-      clientPhone: '+7 (912) 345-67-89',
-      createdAt: '2024-01-15'
-    },
-    {
-      id: 2,
-      serviceName: 'Маникюр',
-      serviceDuration: '90 мин',
-      servicePrice: '2000 ₽',
-      companyName: 'Салон красоты "Элегант"',
-      companyAddress: 'г. Екатеринбург, ул. Ленина, 45',
-      date: '2024-01-22',
-      time: '14:30',
-      status: 'Ожидание',
-      clientName: 'Мария Петрова',
-      clientPhone: '+7 (923) 456-78-90',
-      createdAt: '2024-01-18'
-    },
-    {
-      id: 3,
-      serviceName: 'Массаж спины',
-      serviceDuration: '45 мин',
-      servicePrice: '2500 ₽',
-      companyName: 'Салон красоты "Элегант"',
-      companyAddress: 'г. Екатеринбург, ул. Ленина, 45',
-      date: '2024-01-25',
-      time: '11:00',
-      status: 'Подтвержден',
-      clientName: 'Алексей Сидоров',
-      clientPhone: '+7 (934) 567-89-01',
-      createdAt: '2024-01-20'
-    },
-    {
-      id: 4,
-      serviceName: 'SPA-процедура',
-      serviceDuration: '120 мин',
-      servicePrice: '5000 ₽',
-      companyName: 'Салон красоты "Элегант"',
-      companyAddress: 'г. Екатеринбург, ул. Ленина, 45',
-      date: '2024-01-18',
-      time: '16:00',
-      status: 'Отменен',
-      clientName: 'Екатерина Козлова',
-      clientPhone: '+7 (945) 678-90-12',
-      createdAt: '2024-01-10',
-      cancelledAt: '2024-01-12'
-    },
-    {
-      id: 5,
-      serviceName: 'Консультация',
-      serviceDuration: '30 мин',
-      servicePrice: '1000 ₽',
-      companyName: 'Салон красоты "Элегант"',
-      companyAddress: 'г. Екатеринбург, ул. Ленина, 45',
-      date: '2024-01-21',
-      time: '09:30',
-      status: 'Ожидание',
-      clientName: 'Сергей Федоров',
-      clientPhone: '+7 (956) 789-01-23',
-      createdAt: '2024-01-19'
-    }
-  ];
+  const [userPhone] = useState(() => sessionStorage.getItem('userPhone') || TEST_PHONE);
 
   useEffect(() => {
-    // Проверяем, авторизован ли пользователь (есть ли телефон в sessionStorage)
-    const phone = sessionStorage.getItem('userPhone');
-    
-    if (!phone) {
-      // Если телефона нет, используем тестовый номер
-      const testPhone = '+7 (999) 123-45-67';
-      sessionStorage.setItem('userPhone', testPhone);
-      setUserPhone(testPhone);
-    } else {
-      setUserPhone(phone);
-    }
+    sessionStorage.setItem('userPhone', userPhone);
 
     // Имитация загрузки данных
-    setTimeout(() => {
+    const timerId = setTimeout(() => {
       // В тестовом режиме показываем все моковые данные
       // (в реальном приложении здесь был бы API запрос)
-      setBookings(mockBookings);
+      setBookings(MOCK_BOOKINGS);
       setIsLoading(false);
     }, 800);
-  }, [navigate]);
+
+    return () => clearTimeout(timerId);
+  }, [userPhone]);
 
   const handleBookingClick = (booking) => {
     setSelectedBooking(booking);
@@ -192,7 +184,7 @@ const MyBookingsPage = () => {
 
   // Функция для добавления тестовой записи (для тестирования)
   const addTestBooking = () => {
-    const newBooking = {
+      const newBooking = {
       id: Date.now(),
       serviceName: 'Тестовая услуга',
       serviceDuration: '60 мин',
@@ -203,7 +195,7 @@ const MyBookingsPage = () => {
       time: '15:00',
       status: 'Ожидание',
       clientName: 'Тестовый Клиент',
-      clientPhone: userPhone,
+        clientPhone: userPhone,
       createdAt: new Date().toISOString().split('T')[0]
     };
     
