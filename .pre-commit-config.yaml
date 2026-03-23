@@ -12,14 +12,14 @@ repos:
     hooks:
       - id: frontend-eslint
         name: frontend eslint
-        entry: npx --prefix frontend eslint
+        entry: npm --prefix frontend run lint
         language: system
-        types_or: [javascript, jsx]
+        pass_filenames: false
         files: ^frontend/.*\.(js|jsx)$
 
       - id: frontend-prettier
         name: frontend prettier
-        entry: npx --prefix frontend prettier --check
+        entry: npx --prefix frontend prettier --write
         language: system
         types_or: [javascript, jsx, css]
         files: ^frontend/(src|public)/.*\.(js|jsx|css|html|json)$
