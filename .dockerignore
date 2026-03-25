@@ -1,0 +1,17 @@
+.git
+.github
+.idea
+frontend
+docs
+SA
+Practice201
+Practice202
+Practice203
+backend/.pytest_cache
+backend/.mypy_cache
+backend/__pycache__
+backend/**/*.pyc
+backend/.env
+backend/storage
+node_modules
+npm-debug.log
