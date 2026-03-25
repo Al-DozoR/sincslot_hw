@@ -14,7 +14,7 @@ RUN apt-get update \
 
 WORKDIR /build
 
-COPY requirements.txt ./requirements.txt
+COPY backend/requirements.txt ./requirements.txt
 RUN "${VENV_PATH}/bin/pip" install -r requirements.txt
 
 
@@ -35,7 +35,7 @@ RUN apt-get update \
 WORKDIR /app/backend
 
 COPY --from=builder /opt/venv /opt/venv
-COPY --chown=appuser:appuser . /app/backend
+COPY --chown=appuser:appuser backend /app/backend
 
 RUN mkdir -p /app/backend/storage \
     && chown -R appuser:appuser /app/backend
