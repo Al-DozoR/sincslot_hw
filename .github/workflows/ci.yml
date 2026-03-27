@@ -305,7 +305,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - build_backend_image
-    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop' && secrets.DEPLOY_HOST != '' && secrets.DEPLOY_USER != '' && secrets.DEPLOY_SSH_KEY != ''
     steps:
       - name: Deploy to Docker host from Practice204
         uses: appleboy/ssh-action@v1.2.0
