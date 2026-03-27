@@ -189,15 +189,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Trivy
-        shell: bash
-        run: |
-          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin v0.65.0
-
       - name: Run Trivy dependency scan
         shell: bash
         run: |
-          trivy fs . \
+          docker run --rm \
+            -v "${{ github.workspace }}:/workspace" \
+            -w /workspace \
+            aquasec/trivy:0.65.0 \
+            fs . \
             --scanners vuln \
             --vuln-type library \
             --severity HIGH,CRITICAL \
