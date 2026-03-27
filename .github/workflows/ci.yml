@@ -1,4 +1,4 @@
-name: CI
+name: SincSlot Optimized CI/CD
 
 on:
   pull_request:
@@ -13,8 +13,17 @@ on:
     branches:
       - develop
 
+concurrency:
+  group: sincslot-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.11"
+  NODE_VERSION: "20"
+  REGISTRY_IMAGE: ghcr.io/${{ github.repository_owner }}/sincslot-backend
+
 jobs:
-  lint:
+  lint_frontend:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -23,13 +32,13 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: "npm"
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install frontend dependencies
         working-directory: frontend
-        run: npm install
+        run: npm ci
 
       - name: Run ESLint
         working-directory: frontend
@@ -39,21 +48,57 @@ jobs:
         working-directory: frontend
         run: npm exec prettier --check "src/**/*.{js,jsx,css}"
 
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
+  lint_backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend/requirements-dev.txt
 
-      - name: Install pre-commit
+      - name: Install backend tooling
+        working-directory: backend
         run: |
           python -m pip install --upgrade pip
-          pip install pre-commit
+          pip install -r requirements-dev.txt
+
+      - name: Install frontend dependencies for pre-commit hooks
+        working-directory: frontend
+        run: npm ci
 
       - name: Run pre-commit
         run: pre-commit run --all-files
 
-  test:
+  test_backend:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        test_suite:
+          - name: service
+            path: backend/tests/test_service/test_service.py
+          - name: settings_company
+            path: backend/tests/test_company/test_settings_company/test_settings_company.py
+          - name: work_schedule
+            path: backend/tests/test_company/test_work_schedule/test_work_schedule.py
     services:
       postgres:
         image: postgres:16
@@ -85,7 +130,11 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend/requirements-dev.txt
 
       - name: Install backend dependencies
         working-directory: backend
@@ -93,14 +142,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run pytest
-        run: >
-          pytest -q
-          backend/tests/test_service/test_service.py
-          backend/tests/test_company/test_settings_company/test_settings_company.py
-          backend/tests/test_company/test_work_schedule/test_work_schedule.py
+      - name: Run ${{ matrix.test_suite.name }} tests
+        run: pytest -q ${{ matrix.test_suite.path }}
 
-  security:
+  security_sast:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -109,9 +154,13 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend/requirements-dev.txt
 
-      - name: Install security tools
+      - name: Install Bandit
         working-directory: backend
         run: |
           python -m pip install --upgrade pip
@@ -125,31 +174,64 @@ jobs:
           backend/entity
           backend/repository
           backend/use_case
+          -f json
+          -o bandit-report.json
 
-      - name: Install Gitleaks
+      - name: Upload Bandit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-report
+          path: bandit-report.json
+
+  security_sca:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Trivy dependency scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: table
+          vuln-type: library
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: 1
+
+  security_gate:
+    runs-on: ubuntu-latest
+    needs:
+      - security_sast
+      - security_sca
+    steps:
+      - name: Check security status
+        shell: bash
         run: |
-          curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v8.24.3/gitleaks_8.24.3_linux_x64.tar.gz -o gitleaks.tar.gz
-          tar -xzf gitleaks.tar.gz
-          sudo mv gitleaks /usr/local/bin/gitleaks
-
-      - name: Run Gitleaks
-        run: gitleaks detect --source . --no-git --verbose --gitleaks-ignore-path .gitleaksignore
+          if [ "${{ needs.security_sast.result }}" != "success" ] || [ "${{ needs.security_sca.result }}" != "success" ]; then
+            echo "Critical security findings detected."
+            exit 1
+          fi
+          echo "Security gate passed."
 
   notify:
     runs-on: ubuntu-latest
     needs:
-      - lint
-      - test
-      - security
+      - lint_frontend
+      - lint_backend
+      - test_backend
+      - security_gate
     if: github.event_name == 'pull_request' && always()
     steps:
       - name: Send Telegram notification
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          LINT_RESULT: ${{ needs.lint.result }}
-          TEST_RESULT: ${{ needs.test.result }}
-          SECURITY_RESULT: ${{ needs.security.result }}
+          FRONTEND_RESULT: ${{ needs.lint_frontend.result }}
+          BACKEND_RESULT: ${{ needs.lint_backend.result }}
+          TEST_RESULT: ${{ needs.test_backend.result }}
+          SECURITY_RESULT: ${{ needs.security_gate.result }}
           PR_URL: ${{ github.event.pull_request.html_url }}
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_AUTHOR: ${{ github.event.pull_request.user.login }}
@@ -161,22 +243,23 @@ jobs:
           fi
 
           STATUS="FAILED"
-          if [ "$LINT_RESULT" = "success" ] && [ "$TEST_RESULT" = "success" ] && [ "$SECURITY_RESULT" = "success" ]; then
+          if [ "$FRONTEND_RESULT" = "success" ] && [ "$BACKEND_RESULT" = "success" ] && [ "$TEST_RESULT" = "success" ] && [ "$SECURITY_RESULT" = "success" ]; then
             STATUS="SUCCESS"
           fi
 
-          MESSAGE="SincSlot CI: ${STATUS}%0APR: ${PR_TITLE}%0AAuthor: ${PR_AUTHOR}%0ALint: ${LINT_RESULT}%0ATest: ${TEST_RESULT}%0ASecurity: ${SECURITY_RESULT}%0A${PR_URL}"
+          MESSAGE="SincSlot CI: ${STATUS}%0APR: ${PR_TITLE}%0AAuthor: ${PR_AUTHOR}%0AFrontend lint: ${FRONTEND_RESULT}%0ABackend lint: ${BACKEND_RESULT}%0ATests: ${TEST_RESULT}%0ASecurity: ${SECURITY_RESULT}%0A${PR_URL}"
 
           curl -s --fail -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             -d "chat_id=${TELEGRAM_CHAT_ID}" \
             -d "text=${MESSAGE}"
 
-  docker:
+  build_backend_image:
     runs-on: ubuntu-latest
     needs:
-      - lint
-      - test
-      - security
+      - lint_frontend
+      - lint_backend
+      - test_backend
+      - security_gate
     if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
     permissions:
       contents: read
@@ -199,7 +282,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository_owner }}/sincslot-backend
+          images: ${{ env.REGISTRY_IMAGE }}
           tags: |
             type=raw,value=latest
             type=sha
@@ -212,3 +295,23 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=${{ env.REGISTRY_IMAGE }}:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY_IMAGE }}:buildcache,mode=max
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs:
+      - build_backend_image
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    steps:
+      - name: Deploy to Docker host from Practice204
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            cd /opt/sincslot
+            docker login ghcr.io -u "${{ github.actor }}" -p "${{ secrets.GITHUB_TOKEN }}"
+            docker compose pull app
+            docker compose up -d app
