@@ -189,16 +189,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install Trivy
+        shell: bash
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin v0.65.0
+
       - name: Run Trivy dependency scan
-        uses: aquasecurity/trivy-action@v0.33.1
-        with:
-          scan-type: fs
-          scan-ref: .
-          format: table
-          vuln-type: library
-          severity: HIGH,CRITICAL
-          ignore-unfixed: true
-          exit-code: 1
+        shell: bash
+        run: |
+          trivy fs . \
+            --scanners vuln \
+            --vuln-type library \
+            --severity HIGH,CRITICAL \
+            --ignore-unfixed \
+            --exit-code 1
 
   security_gate:
     runs-on: ubuntu-latest
