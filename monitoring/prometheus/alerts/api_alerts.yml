@@ -1,0 +1,61 @@
+groups:
+  - name: api_alerts
+    interval: 30s
+    rules:
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{status=~"5.."}[5m]))
+            /
+            clamp_min(sum(rate(http_requests_total[5m])), 0.001)
+          ) * 100 > 5
+        for: 5m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "Высокий уровень ошибок API"
+          description: "Доля 5xx ответов за 5 минут достигла {{ $value | printf \"%.2f\" }}%."
+          runbook_url: "https://wiki.example.com/runbooks/high-error-rate"
+
+      - alert: HighLatencyP95
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum by (le, endpoint) (rate(http_request_duration_seconds_bucket[5m]))
+          ) > 0.5
+        for: 10m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Высокая задержка API"
+          description: "95-й перцентиль latency по endpoint {{ $labels.endpoint }} достиг {{ $value | printf \"%.2f\" }}s."
+          runbook_url: "https://wiki.example.com/runbooks/high-latency"
+
+      - alert: ServiceDown
+        expr: up{job="api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "Сервис API недоступен"
+          description: "Prometheus не может получить метрики с backend более 1 минуты."
+          runbook_url: "https://wiki.example.com/runbooks/service-down"
+
+      - alert: HostHighCPUUsage
+        expr: |
+          100 - (
+            avg by (instance) (
+              rate(node_cpu_seconds_total{job="node",mode="idle"}[5m])
+            ) * 100
+          ) > 80
+        for: 5m
+        labels:
+          severity: warning
+          team: infrastructure
+        annotations:
+          summary: "Высокое использование CPU"
+          description: "Нагрузка CPU на узле {{ $labels.instance }} превысила 80% и составляет {{ $value | printf \"%.1f\" }}%."
+          runbook_url: "https://wiki.example.com/runbooks/high-cpu"

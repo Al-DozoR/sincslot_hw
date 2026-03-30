@@ -11,6 +11,7 @@ from backend.api.controllers.client.auth.parse_aurh_token import get_current_cli
 from backend.di_container.di_container import di_container
 from backend.use_case.booking_use_case import IBookingUseCase
 from backend.core.db_helper import db_helper
+from backend.observability.metrics import bookings_created_total
 
 logger = init_logger('create_booking', 'INFO')
 
@@ -47,6 +48,7 @@ async def create_booking(
             ).model_dump()
         )
 
+    bookings_created_total.labels(service_id=str(service_id)).inc()
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content=BookingGetById(booking_id=booking_id).model_dump()

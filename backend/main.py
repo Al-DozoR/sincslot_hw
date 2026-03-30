@@ -3,12 +3,13 @@ from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
 import uvicorn
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from backend.api.routes.register_routes import routes
 from backend.core.config import settings
 from backend.core.db_helper import db_helper
+from backend.observability.metrics import PrometheusMiddleware, metrics_response
 
 
 @asynccontextmanager
@@ -30,8 +31,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(PrometheusMiddleware)
 
 app.include_router(routes)
+
+
+@app.get("/metrics", include_in_schema=False)
+async def metrics():
+    return metrics_response()
 
 if __name__ == "__main__":
     logging.info(f'Start server: {settings.run.port}')

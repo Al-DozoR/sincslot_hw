@@ -27,6 +27,7 @@ packaging==25.0
 passlib==1.7.4
 phonenumbers==9.0.19
 pluggy==1.6.0
+prometheus-client==0.23.1
 pyasn1==0.6.3
 pycparser==2.23
 pydantic==2.12.4
