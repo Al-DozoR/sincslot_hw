@@ -76,6 +76,8 @@ jobs:
         run: mkdir -p artifacts
 
       - name: Block on Critical SCA findings
+        id: trivy_fs_critical
+        continue-on-error: true
         run: >
           docker run --rm
           -v "${PWD}:/workdir"
@@ -86,6 +88,7 @@ jobs:
           --vuln-type library
           --severity CRITICAL
           --exit-code 1
+          --skip-version-check
           --format table
           --output trivy-fs-critical.txt
 
@@ -102,6 +105,7 @@ jobs:
           --vuln-type library
           --severity HIGH
           --exit-code 1
+          --skip-version-check
           --format table
           --output trivy-fs-high.txt
 
@@ -115,6 +119,7 @@ jobs:
           --scanners vuln
           --vuln-type library
           --severity CRITICAL,HIGH,MEDIUM,LOW
+          --skip-version-check
           --format json
           --output artifacts/trivy-fs-report.json
 
@@ -122,7 +127,15 @@ jobs:
         if: steps.trivy_fs_high.outcome == 'failure'
         run: echo "Trivy found HIGH dependency vulnerabilities. Pipeline continues, but remediation is required." >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Fail on Critical SCA findings
+        if: steps.trivy_fs_critical.outcome == 'failure'
+        run: |
+          echo "Trivy found CRITICAL dependency vulnerabilities."
+          cat trivy-fs-critical.txt
+          exit 1
+
       - name: Upload SCA report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: trivy-fs-report
@@ -164,6 +177,8 @@ jobs:
         run: docker build -f backend/Dockerfile -t ${{ env.IMAGE_NAME }}:${{ github.sha }} .
 
       - name: Block on Critical and High image findings
+        id: trivy_image_gate
+        continue-on-error: true
         run: >
           docker run --rm
           -v /var/run/docker.sock:/var/run/docker.sock
@@ -171,8 +186,10 @@ jobs:
           -w /workdir
           ${{ env.TRIVY_IMAGE }}
           image ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          --scanners vuln
           --severity CRITICAL,HIGH
           --exit-code 1
+          --skip-version-check
           --format table
           --output trivy-image-report.txt
 
@@ -184,11 +201,21 @@ jobs:
           -w /workdir
           ${{ env.TRIVY_IMAGE }}
           image ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          --scanners vuln
           --severity CRITICAL,HIGH,MEDIUM,LOW
+          --skip-version-check
           --format json
           --output artifacts/trivy-image-report.json
 
+      - name: Fail on Critical and High image findings
+        if: steps.trivy_image_gate.outcome == 'failure'
+        run: |
+          echo "Trivy found CRITICAL/HIGH vulnerabilities in the backend image."
+          cat trivy-image-report.txt
+          exit 1
+
       - name: Upload image report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: trivy-image-report
