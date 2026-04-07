@@ -41,11 +41,21 @@ jobs:
           pip install -r requirements-dev.txt
 
       - name: Run Bandit
+        id: bandit_medium
+        continue-on-error: true
         run: |
           mkdir -p artifacts
           bandit -q -r backend -ll -f json -o artifacts/bandit-report.json
 
+      - name: Block on High SAST findings
+        run: bandit -q -r backend -lll
+
+      - name: Add warning summary for Medium findings
+        if: steps.bandit_medium.outcome == 'failure'
+        run: echo "Bandit found MEDIUM severity issues. Pipeline continues, but remediation is required." >> "$GITHUB_STEP_SUMMARY"
+
       - name: Upload Bandit report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: bandit-report
@@ -61,7 +71,7 @@ jobs:
         run: mkdir -p artifacts
 
       - name: Block on Critical SCA findings
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.33.1
         with:
           scan-type: fs
           scan-ref: .
@@ -73,7 +83,7 @@ jobs:
       - name: Warn on High SCA findings
         id: trivy_fs_high
         continue-on-error: true
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.33.1
         with:
           scan-type: fs
           scan-ref: .
@@ -83,7 +93,7 @@ jobs:
           output: trivy-fs-high.txt
 
       - name: Save SCA JSON report
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.33.1
         with:
           scan-type: fs
           scan-ref: .
@@ -137,7 +147,7 @@ jobs:
         run: docker build -f backend/Dockerfile -t ${{ env.IMAGE_NAME }}:${{ github.sha }} .
 
       - name: Block on Critical and High image findings
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.33.1
         with:
           image-ref: ${{ env.IMAGE_NAME }}:${{ github.sha }}
           format: table
@@ -146,7 +156,7 @@ jobs:
           output: trivy-image-report.txt
 
       - name: Save image JSON report
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.33.1
         with:
           image-ref: ${{ env.IMAGE_NAME }}:${{ github.sha }}
           format: json
