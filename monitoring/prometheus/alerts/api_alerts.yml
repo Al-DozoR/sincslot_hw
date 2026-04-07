@@ -15,7 +15,7 @@ groups:
           team: backend
         annotations:
           summary: "Высокий уровень ошибок API"
-          description: "Доля 5xx ответов за 5 минут достигла {{ $value | printf \"%.2f\" }}%."
+          description: "Доля 5xx-ответов за 5 минут достигла {{ $value | printf \"%.2f\" }}%."
           runbook_url: "https://wiki.example.com/runbooks/high-error-rate"
 
       - alert: HighLatencyP95
@@ -59,3 +59,33 @@ groups:
           summary: "Высокое использование CPU"
           description: "Нагрузка CPU на узле {{ $labels.instance }} превысила 80% и составляет {{ $value | printf \"%.1f\" }}%."
           runbook_url: "https://wiki.example.com/runbooks/high-cpu"
+
+      - alert: SuspiciousErrorSpike
+        expr: |
+          (
+            sum(rate(http_requests_total{status=~"5.."}[5m]))
+            /
+            clamp_min(sum(rate(http_requests_total[5m])), 0.001)
+          ) * 100 > 10
+        for: 2m
+        labels:
+          severity: critical
+          team: security
+          type: security
+        annotations:
+          summary: "Подозрительный рост ошибок"
+          description: "Доля 5xx превысила 10%. Возможна атака или активное сканирование уязвимостей."
+          runbook_url: "https://wiki.example.com/runbooks/suspicious-error-spike"
+
+      - alert: AbnormalRequestRate
+        expr: |
+          sum(rate(http_requests_total[5m])) > 1000
+        for: 5m
+        labels:
+          severity: warning
+          team: security
+          type: security
+        annotations:
+          summary: "Аномально высокая частота запросов"
+          description: "RPS превысил 1000. Возможны DDoS-атака или автоматизированное сканирование."
+          runbook_url: "https://wiki.example.com/runbooks/abnormal-request-rate"

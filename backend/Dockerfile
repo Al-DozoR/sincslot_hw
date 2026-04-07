@@ -1,4 +1,4 @@
-FROM python:3.12-slim AS builder
+FROM python:3.12.11-slim-bookworm AS builder
 
 ENV VENV_PATH=/opt/venv \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
@@ -18,7 +18,7 @@ COPY backend/requirements.txt ./requirements.txt
 RUN "${VENV_PATH}/bin/pip" install -r requirements.txt
 
 
-FROM python:3.12-slim AS runtime
+FROM python:3.12.11-slim-bookworm AS runtime
 
 ENV VENV_PATH=/opt/venv \
     PATH="/opt/venv/bin:${PATH}" \
