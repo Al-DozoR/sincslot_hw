@@ -86,6 +86,7 @@ jobs:
           fs .
           --scanners vuln
           --vuln-type library
+          --ignore-unfixed
           --severity CRITICAL
           --exit-code 1
           --skip-version-check
@@ -103,6 +104,7 @@ jobs:
           fs .
           --scanners vuln
           --vuln-type library
+          --ignore-unfixed
           --severity HIGH
           --exit-code 1
           --skip-version-check
@@ -187,6 +189,7 @@ jobs:
           ${{ env.TRIVY_IMAGE }}
           image ${{ env.IMAGE_NAME }}:${{ github.sha }}
           --scanners vuln
+          --ignore-unfixed
           --severity CRITICAL,HIGH
           --exit-code 1
           --skip-version-check

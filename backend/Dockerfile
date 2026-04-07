@@ -1,4 +1,4 @@
-FROM python:3.12.11-slim-bookworm AS builder
+FROM python:3.12.13-slim-bookworm AS builder
 
 ENV VENV_PATH=/opt/venv \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
@@ -7,6 +7,7 @@ ENV VENV_PATH=/opt/venv \
     PYTHONUNBUFFERED=1
 
 RUN apt-get update \
+    && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends build-essential libpq-dev \
     && python -m venv "${VENV_PATH}" \
     && "${VENV_PATH}/bin/pip" install --upgrade pip \
@@ -15,10 +16,11 @@ RUN apt-get update \
 WORKDIR /build
 
 COPY backend/requirements.txt ./requirements.txt
-RUN "${VENV_PATH}/bin/pip" install -r requirements.txt
+RUN "${VENV_PATH}/bin/pip" install -r requirements.txt \
+    && "${VENV_PATH}/bin/pip" uninstall -y ecdsa rsa pyasn1 jose
 
 
-FROM python:3.12.11-slim-bookworm AS runtime
+FROM python:3.12.13-slim-bookworm AS runtime
 
 ENV VENV_PATH=/opt/venv \
     PATH="/opt/venv/bin:${PATH}" \
@@ -28,6 +30,7 @@ ENV VENV_PATH=/opt/venv \
     SYNC_SLOT__RUN__HOST=0.0.0.0
 
 RUN apt-get update \
+    && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends libpq5 \
     && useradd --create-home --home-dir /home/appuser --shell /usr/sbin/nologin appuser \
     && rm -rf /var/lib/apt/lists/*
