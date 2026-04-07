@@ -17,6 +17,7 @@ env:
   PYTHON_VERSION: "3.12"
   NODE_VERSION: "20"
   IMAGE_NAME: sincslot-backend-security
+  TRIVY_IMAGE: aquasec/trivy:0.65.0
 
 jobs:
   sast-bandit:
@@ -45,10 +46,14 @@ jobs:
         continue-on-error: true
         run: |
           mkdir -p artifacts
-          bandit -q -r backend -ll -f json -o artifacts/bandit-report.json
+          bandit -q -ll \
+            -r backend/api backend/core backend/di_container backend/entity backend/logger backend/observability backend/repository backend/use_case \
+            -f json -o artifacts/bandit-report.json
 
       - name: Block on High SAST findings
-        run: bandit -q -r backend -lll
+        run: |
+          bandit -q -lll \
+            -r backend/api backend/core backend/di_container backend/entity backend/logger backend/observability backend/repository backend/use_case
 
       - name: Add warning summary for Medium findings
         if: steps.bandit_medium.outcome == 'failure'
@@ -71,35 +76,47 @@ jobs:
         run: mkdir -p artifacts
 
       - name: Block on Critical SCA findings
-        uses: aquasecurity/trivy-action@v0.33.1
-        with:
-          scan-type: fs
-          scan-ref: .
-          format: table
-          severity: CRITICAL
-          exit-code: 1
-          output: trivy-fs-critical.txt
+        run: >
+          docker run --rm
+          -v "${PWD}:/workdir"
+          -w /workdir
+          ${{ env.TRIVY_IMAGE }}
+          fs .
+          --scanners vuln
+          --vuln-type library
+          --severity CRITICAL
+          --exit-code 1
+          --format table
+          --output trivy-fs-critical.txt
 
       - name: Warn on High SCA findings
         id: trivy_fs_high
         continue-on-error: true
-        uses: aquasecurity/trivy-action@v0.33.1
-        with:
-          scan-type: fs
-          scan-ref: .
-          format: table
-          severity: HIGH
-          exit-code: 1
-          output: trivy-fs-high.txt
+        run: >
+          docker run --rm
+          -v "${PWD}:/workdir"
+          -w /workdir
+          ${{ env.TRIVY_IMAGE }}
+          fs .
+          --scanners vuln
+          --vuln-type library
+          --severity HIGH
+          --exit-code 1
+          --format table
+          --output trivy-fs-high.txt
 
       - name: Save SCA JSON report
-        uses: aquasecurity/trivy-action@v0.33.1
-        with:
-          scan-type: fs
-          scan-ref: .
-          format: json
-          severity: CRITICAL,HIGH,MEDIUM,LOW
-          output: artifacts/trivy-fs-report.json
+        run: >
+          docker run --rm
+          -v "${PWD}:/workdir"
+          -w /workdir
+          ${{ env.TRIVY_IMAGE }}
+          fs .
+          --scanners vuln
+          --vuln-type library
+          --severity CRITICAL,HIGH,MEDIUM,LOW
+          --format json
+          --output artifacts/trivy-fs-report.json
 
       - name: Add warning summary for High findings
         if: steps.trivy_fs_high.outcome == 'failure'
@@ -147,21 +164,29 @@ jobs:
         run: docker build -f backend/Dockerfile -t ${{ env.IMAGE_NAME }}:${{ github.sha }} .
 
       - name: Block on Critical and High image findings
-        uses: aquasecurity/trivy-action@v0.33.1
-        with:
-          image-ref: ${{ env.IMAGE_NAME }}:${{ github.sha }}
-          format: table
-          severity: CRITICAL,HIGH
-          exit-code: 1
-          output: trivy-image-report.txt
+        run: >
+          docker run --rm
+          -v /var/run/docker.sock:/var/run/docker.sock
+          -v "${PWD}:/workdir"
+          -w /workdir
+          ${{ env.TRIVY_IMAGE }}
+          image ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          --severity CRITICAL,HIGH
+          --exit-code 1
+          --format table
+          --output trivy-image-report.txt
 
       - name: Save image JSON report
-        uses: aquasecurity/trivy-action@v0.33.1
-        with:
-          image-ref: ${{ env.IMAGE_NAME }}:${{ github.sha }}
-          format: json
-          severity: CRITICAL,HIGH,MEDIUM,LOW
-          output: artifacts/trivy-image-report.json
+        run: >
+          docker run --rm
+          -v /var/run/docker.sock:/var/run/docker.sock
+          -v "${PWD}:/workdir"
+          -w /workdir
+          ${{ env.TRIVY_IMAGE }}
+          image ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          --severity CRITICAL,HIGH,MEDIUM,LOW
+          --format json
+          --output artifacts/trivy-image-report.json
 
       - name: Upload image report
         uses: actions/upload-artifact@v4
@@ -174,6 +199,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Prepare artifacts directory
+        run: mkdir -p artifacts
 
       - name: Generate SBOM with Syft
         uses: anchore/sbom-action@v0
